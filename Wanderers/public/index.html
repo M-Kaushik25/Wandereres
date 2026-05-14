@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wanderers - Tour Packages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+        .hero-section {
+            background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass-effect shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-blue-600 tracking-wider">WANDERERS</a>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md font-medium transition">Home</a>
+                    <a href="#packages" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md font-medium transition">Destinations</a>
+                    <a href="admin.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md font-medium transition">Admin</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero-section h-screen flex items-center justify-center relative">
+        <div class="absolute inset-0 bg-black opacity-40"></div>
+        <div class="relative z-10 text-center text-white px-4">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 drop-shadow-lg">Explore The World</h1>
+            <p class="text-lg md:text-2xl mb-8 font-light drop-shadow-md">Find your next great adventure with Wanderers</p>
+            <a href="#packages" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full transition transform hover:scale-105 duration-300">View Packages</a>
+        </div>
+    </div>
+
+    <!-- Packages Section -->
+    <div id="packages" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Our Top Packages</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">Discover our carefully curated tours designed to give you the best experiences around the globe.</p>
+        </div>
+        
+        <div id="packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <!-- Packages injected here by JS -->
+            <div class="col-span-full text-center text-gray-500 py-10">Loading packages...</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-10">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-4 text-2xl font-bold text-blue-400">WANDERERS</p>
+            <p class="text-gray-400">&copy; 2026 Wanderers Tour Management. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Fetch packages and render
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/packages')
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById('packages-container');
+                    container.innerHTML = '';
+                    if(data.data && data.data.length > 0) {
+                        data.data.forEach(pkg => {
+                            const card = document.createElement('div');
+                            card.className = "bg-white rounded-2xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition duration-300 group";
+                            card.innerHTML = `
+                                <div class="relative h-60 overflow-hidden">
+                                    <img src="${pkg.image_url}" alt="${pkg.title}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                    <div class="absolute top-4 right-4 bg-white text-gray-900 font-bold px-3 py-1 rounded-full text-sm shadow">
+                                        $${pkg.price}
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">${pkg.destination}</span>
+                                        <span class="text-gray-500 text-sm"><i class="far fa-clock"></i> ${pkg.duration_days} Days</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">${pkg.title}</h3>
+                                    <p class="text-gray-600 text-sm mb-6 line-clamp-3">${pkg.description}</p>
+                                    <a href="booking.html?package_id=${pkg.id}" class="block w-full text-center bg-gray-900 hover:bg-blue-600 text-white font-medium py-2 rounded-lg transition duration-300">Book Now</a>
+                                </div>
+                            `;
+                            container.appendChild(card);
+                        });
+                    } else {
+                        container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">No packages available.</div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching packages:', err);
+                    document.getElementById('packages-container').innerHTML = '<div class="col-span-full text-center text-red-500 py-10">Failed to load packages. Please try again later.</div>';
+                });
+        });
+    </script>
+</body>
+</html>

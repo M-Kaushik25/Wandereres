@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Package - Wanderers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Navbar -->
+    <nav class="w-full bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-blue-600 tracking-wider">WANDERERS</a>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md font-medium transition">Home</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden md:flex">
+            <!-- Package Info Side -->
+            <div class="md:w-1/2 bg-gray-50 p-8 flex flex-col justify-center" id="package-details">
+                <div class="animate-pulse">
+                    <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+            </div>
+
+            <!-- Booking Form Side -->
+            <div class="md:w-1/2 p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Complete Your Booking</h2>
+                <form id="booking-form" class="space-y-5">
+                    <input type="hidden" id="package_id" name="package_id">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="tel" id="phone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Travel Date</label>
+                            <input type="date" id="travel_date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Passengers</label>
+                            <input type="number" id="passengers" min="1" max="20" value="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-md mt-6">
+                        Confirm Booking
+                    </button>
+                </form>
+                
+                <div id="status-message" class="mt-4 hidden p-4 rounded-lg"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const packageId = urlParams.get('package_id');
+            
+            if(!packageId) {
+                document.getElementById('package-details').innerHTML = '<p class="text-red-500">Invalid package selected. Please go back.</p>';
+                return;
+            }
+
+            document.getElementById('package_id').value = packageId;
+
+            // Fetch package details
+            fetch(\`/api/packages/\${packageId}\`)
+                .then(res => res.json())
+                .then(data => {
+                    const pkg = data.data;
+                    if(!pkg) {
+                        document.getElementById('package-details').innerHTML = '<p class="text-red-500">Package not found.</p>';
+                        return;
+                    }
+
+                    document.getElementById('package-details').innerHTML = `
+                        <div class="mb-6 rounded-xl overflow-hidden shadow-sm">
+                            <img src="${pkg.image_url}" alt="${pkg.title}" class="w-full h-48 object-cover">
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">${pkg.title}</h3>
+                        <p class="text-blue-600 font-medium mb-4">${pkg.destination} &bull; ${pkg.duration_days} Days</p>
+                        <p class="text-gray-600 mb-6">${pkg.description}</p>
+                        <div class="mt-auto border-t pt-4 border-gray-200">
+                            <p class="text-gray-500 text-sm">Total Price (per person)</p>
+                            <p class="text-3xl font-bold text-gray-900">$${pkg.price}</p>
+                        </div>
+                    `;
+                })
+                .catch(err => console.error(err));
+
+            // Handle Form Submit
+            document.getElementById('booking-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const payload = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    package_id: document.getElementById('package_id').value,
+                    travel_date: document.getElementById('travel_date').value,
+                    passengers: document.getElementById('passengers').value
+                };
+
+                fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('status-message');
+                    statusDiv.classList.remove('hidden');
+                    if(data.error) {
+                        statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-100 text-red-700';
+                        statusDiv.innerText = 'Error: ' + data.error;
+                    } else {
+                        statusDiv.className = 'mt-4 p-4 rounded-lg bg-green-100 text-green-700 font-medium';
+                        statusDiv.innerText = 'Booking successful! We will contact you soon.';
+                        document.getElementById('booking-form').reset();
+                    }
+                })
+                .catch(err => console.error(err));
+            });
+        });
+    </script>
+</body>
+</html>
